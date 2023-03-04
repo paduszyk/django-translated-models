@@ -1,0 +1,8 @@
+[run]
+branch = True
+source = translated_models
+
+[report]
+skip_empty = True
+skip_covered = True
+show_missing = True
