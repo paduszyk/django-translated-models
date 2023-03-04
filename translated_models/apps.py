@@ -7,4 +7,4 @@ class TranslatedModelsConfig(apps.AppConfig):
     name = "translated_models"
 
     def ready(self):
-        pass
+        from . import checks  # noqa: F401
