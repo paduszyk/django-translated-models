@@ -38,6 +38,15 @@ class TranslatedModelBase(models.Model):
     # LANGUAGES setting are used.
     languages = None
 
+    # Code for a language, which the content of original fields is in.
+    # It must NOT stay None. Furthermore, it must be in the LANGUAGES setting,
+    # but not in `languages` at the same time.
+    original_language = None
+
+    # NOTE `original_language` is not the same as the active language! This is
+    # simply a hook representing a language which the content of the original
+    # field is given in.
+
     class Meta:
         abstract = True
 
@@ -67,6 +76,7 @@ class TranslatedModelBase(models.Model):
         errors = [
             *cls._check_translated_fields(**kwargs),
             *cls._check_languages(**kwargs),
+            *cls._check_original_language(**kwargs),
         ]
         return errors
 
@@ -200,6 +210,64 @@ class TranslatedModelBase(models.Model):
                 )
                 for index, code in enumerate(languages)
                 if not is_language_in_settings(code)
+            ]
+
+        return errors
+
+    @classmethod
+    def _check_original_language(cls, **kwargs):
+        """Perform `original_language` model attribute check."""
+        errors = []
+
+        original_language = cls.original_language
+        if original_language is None:
+            errors += [
+                Error(
+                    "'original_language' mustn't be None. Use one the "
+                    "language codes defined in LANGUAGES setting in {} "
+                    "module: {}.".format(
+                        os.environ["DJANGO_SETTINGS_MODULE"],
+                        ", ".join(
+                            language[0] for language in settings.LANGUAGES
+                        ),
+                    ),
+                    obj=cls,
+                    id="translated_models.E008",
+                )
+            ]
+
+        if not errors and not isinstance(original_language, str):
+            errors += [
+                Error(
+                    "'original_language' must be a string.",
+                    obj=cls,
+                    id="translated_models.E009",
+                )
+            ]
+
+        if not errors and not is_language_in_django(original_language):
+            errors += [
+                Error(
+                    "original_language = '{}' isn't a valid code for any of "
+                    "languages available in Django.".format(original_language),
+                    obj=cls,
+                    id="translated_models.E010",
+                )
+            ]
+
+        if not errors and not is_language_in_settings(original_language):
+            errors += [
+                Error(
+                    (
+                        "original_language = '{}' doesn't represent a code "
+                        "for any of language defined the LANGUAGES setting in "
+                        "{} module."
+                    ).format(
+                        original_language, os.environ["DJANGO_SETTINGS_MODULE"]
+                    ),
+                    obj=cls,
+                    id="translated_models.E011",
+                )
             ]
 
         return errors

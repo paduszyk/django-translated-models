@@ -14,7 +14,10 @@ class Movie(TranslatedModel):
     premiere_date = models.DateTimeField()
 
     # Model attributes set to their defaults. They are overridden individually
-    # in tests depending on a being feature tested.
+    # in tests depending on a being feature tested. `original_language` is an
+    # exception as missing this attribute raising system check error.
+
+    original_language = "en"
 
     class Meta:
         app_label = "tests"

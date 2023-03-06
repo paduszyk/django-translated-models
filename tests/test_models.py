@@ -75,3 +75,23 @@ class TestTranslatedModel(TestCase):
         # Language not set in settings module in the `languages` attribute
         self.model_update(languages=["de"])
         self.assertModelCheckFailsWithMessageCode("translated_models.E007")
+
+    def test_check_model_fails_with_E008(self):
+        # None value for the `original_language` attribute
+        self.model_update(original_language=None)
+        self.assertModelCheckFailsWithMessageCode("translated_models.E008")
+
+    def test_check_model_fails_with_E009(self):
+        # Non-string value for the `original_language` attribute
+        self.model_update(original_language=0)
+        self.assertModelCheckFailsWithMessageCode("translated_models.E009")
+
+    def test_check_model_fails_with_E010(self):
+        # Non-existing language code for the `original_language` attribute
+        self.model_update(original_language="xy")
+        self.assertModelCheckFailsWithMessageCode("translated_models.E010")
+
+    def test_check_model_fails_with_E011(self):
+        # Language not set in settings module in the `languages` attribute
+        self.model_update(original_language="de")
+        self.assertModelCheckFailsWithMessageCode("translated_models.E011")
